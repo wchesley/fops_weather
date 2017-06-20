@@ -3,9 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net; 
 
 namespace fops_weather_bl
 {
+    //Classes to get weather and store response in variables before going to DB
+
+    public class GetNewWeather
+    {
+        public static void GetWeather(string city)
+        {
+            string api = ""; 
+            string apiAddr = 
+        }
+    }
     public class Features
     {
         public int conditions { get; set; }
