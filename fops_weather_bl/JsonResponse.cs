@@ -13,8 +13,8 @@ namespace fops_weather_bl
     {
         public static void GetWeather(string city)
         {
-            string api = ""; 
-            string apiAddr = 
+            string api = "";
+            string apiAddr = "";
         }
     }
     public class Features

@@ -20,15 +20,30 @@ namespace fops_weather_bl
     public class WeatherData
     {
         //location for SQL DB 
-        const string db_string = "sql database string";
-        
+        const string server_string = "Server=[server_name];Database=[database_name];Trusted_Connection=[true];";
+
+        string db_name = ""; //to allow dynamic selection of db Table?
+
+        //variables for temp storage, to be pushed ot webpage 
+        public string temperature_string { get; set; }
+        public string wind_string { get; set; }
+        public string precip_today_string { get; set; }
+        public string precip_1hr_string { get; set; }
+        public string feelslike_string { get; set; }
+        public string weather { get; set; }
+        public string observation_time { get; set; }
+        public string city { get; set; }
+        public string forecast_url { get; set; }
+        double timeframe = 1.00;
+
 
         //This method accepts the JSON response directly, then saves date to the databse. 
         public static void SaveWeather(string Json_response)
         {
+            //currently set up for Wunderground API 
             //Ready SQL connection, assign DB path 
             SqlConnection conn = new SqlConnection();
-            conn.ConnectionString = db_string;
+            conn.ConnectionString = server_string; 
 
 
             //grabbing data from JsonResponse Class. 
@@ -148,5 +163,91 @@ namespace fops_weather_bl
 
             }
         }
+      
+
+        //Read data from DB, displays as HTML table
+        public static string GetWeather_DB(string CITY_TABLE)
+        {
+            //Currently for Wunderground API 
+            string db_name = CITY_TABLE;
+            string output_table = "";
+            var sql = $"SELECT * FROM {db_name} ORDER BY 'date added' DESC LIMIT 1";
+            using (SqlConnection conn = new SqlConnection(server_string))
+            {
+
+                conn.Open();
+                using (SqlCommand read_command = new SqlCommand(sql, conn))
+                using (SqlDataReader read_weather = read_command.ExecuteReader())
+                {
+                    if (read_weather != null)
+                    {
+                        while (read_weather.Read())
+                        {
+                            string temperature_string = read_weather["temperature_string"].ToString();
+                            string wind_string = read_weather["wind_string"].ToString();
+                            string precip_today_string = read_weather["precip_today_string"].ToString();
+                            string precip_1hr_string = read_weather["precip_1hr_string"].ToString();
+                            string feelslike_string = read_weather["feelslike_string"].ToString();
+                            string city = read_weather["city"].ToString();
+                            string forecast_url = read_weather["forecast_url"].ToString();
+                            string observation_time = read_weather["observation_time"].ToString();
+                            string weather = read_weather["weather"].ToString();
+
+                            output_table = DisplayWeather(temperature_string, precip_1hr_string, precip_today_string, observation_time, feelslike_string, wind_string, weather, city, forecast_url);
+                        }
+                    }
+                    else // read_weather == null 
+                    {
+                        output_table = "<p>No Data Returned</p>";
+                    }
+                }
+            }
+            return output_table;
+        }
+
+        public static string DisplayWeather(string temperature_string, string precip_1hr_string, string precip_today_string, string observation_time, string feelslike_string, string weather, string wind_string, string city, string forecast_url)
+        {
+            //push results to webpage as HTML table 
+            string output = "<table>";
+            output += "<tr>";
+            output += "<th>Current Weather</th>";
+            output += $"<td>{feelslike_string}</td>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Temperature</th>";
+            output += $"<td>{temperature_string}</td>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Rainfall today</th>";
+            output += $"<td>{precip_today_string}</td>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Rainfall in the past hour</th>";
+            output += $"<td>{precip_1hr_string}</td>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Wind</th>";
+            output += $"<th>{wind_string}</th>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Weather</th>";
+            output += $"<td>{weather}</td>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Observed Time</th>";
+            output += $"<tr>{observation_time}</tr>";
+            output += "</tr>";
+            output += "<tr>";
+            output += "<th>Forecast URL</th>";
+            output += $"<tr>{forecast_url}</tr>";
+            output += "</tr>";
+            output += "</table>";
+
+            return output;
+        }
+
+
+
+
     }
 }

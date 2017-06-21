@@ -24,22 +24,12 @@ namespace fops_weather_bl
             //one hour old, fetch new request, 
             //if record is less than one hour, display record. 
 
-            var sql = "";
-            
-            var output = "<table>";
-            output += "<tr>";
-            output += "<th>Current Temperature </th>";
-            output += $"<td>{weather_response.current_observation.temperature_string}</td>";
-            output += "</tr><tr>"; 
-            output +="<th>Wind Speed</th>";
-            output +=$"<td>{weather_response.current_observation.wind_string}</td";
-            output +="</tr>";
-            output += "</table>";    
+                
         }
 
         protected void FetchNewData(string city)
         {
-            string city = txt_city;
+            city = txt_city; //taken from btn on webpage. 
             string api = "http://api.wunderground.com/api/047d1a51849f71a0/conditions/q/TX/";
             string ApiAddr = api + city + ".json";
             var weather_request = string.Empty;
@@ -47,15 +37,17 @@ namespace fops_weather_bl
             {
                 try
                 {
+                    //fetches new request, saves to database
                     weather_request = client.DownloadString(ApiAddr);
-
+                    WeatherData.SaveWeather(weather_request);
                 }
                 catch
                 {
 
                 }
             }
-            RootObject weather_response = JsonConvert.DeserializeObject<RootObject>(weather_request);
+            //display most recent request from database for specified city. 
+            string htmlTable = WeatherData.GetWeather_DB(city);
         }
     }
 }
